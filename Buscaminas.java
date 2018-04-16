@@ -1,34 +1,63 @@
-package Buscaminas;
+package buscaminas;
 
 import java.awt.*;
 import java.awt.event.*;
  
 import javax.swing.*;
 public class Buscaminas extends JFrame implements ActionListener, MouseListener{
+    JButton b[][];
+    JButton reiniciar;
+    JPanel tablero;
+    JPanel botonera;
+    JTextField minasRestantes, tiempo;
     int nomines = 80;
-    int perm[][];
-    String tmp;
-    boolean found = false;
+    int n = 30;
+    int m = 30;
     int row;
     int column;
     int guesses[][];
-    JButton b[][];
+    int perm[][];
     int[][] mines;
+    String tmp;
+    boolean found = false;
     boolean allmines;
-    int n = 30;
-    int m = 30;
     int deltax[] = {-1, 0, 1, -1, 1, -1, 0, 1};
     int deltay[] = {-1, -1, -1, 0, 0, 1, 1, 1};
     double starttime;
     double endtime;
+    
     public Buscaminas(){
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         perm = new int[n][m];
-        boolean allmines = false;
+        allmines = false;
         guesses = new int [n+2][m+2];
         mines = new int[n+2][m+2];
         b = new JButton [n][m];
-        setLayout(new GridLayout(n,m));
+        reiniciar = new JButton("Reiniciar");
+        reiniciar.addActionListener(this);
+        reiniciar.addMouseListener(this);
+        reiniciar.setEnabled(true);
+        tablero = new JPanel();
+        tablero.setVisible(true);
+        tablero.setLayout(new GridLayout(n,m));
+        minasRestantes = new JTextField();
+        minasRestantes.setEnabled(false);
+        minasRestantes.setText(String.valueOf(nomines));
+        tiempo = new JTextField();
+        tiempo.setEnabled(false);
+
+        botonera = new JPanel();
+        botonera.setVisible(true);
+        botonera.setLayout(new GridLayout(1,5));
+        botonera.add(reiniciar);
+        botonera.add(new JLabel("Minas restantes: "));
+        botonera.add(minasRestantes);
+        botonera.add(new JLabel("Tiempo: "));
+        botonera.add(tiempo);
+        this.setLayout(new BorderLayout());
+        add(botonera, BorderLayout.PAGE_START);
+        add(tablero, BorderLayout.CENTER);
+
         for (int y = 0;y<m+2;y++){
             mines[0][y] = 3;
             mines[n+1][y] = 3;
@@ -68,14 +97,15 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener{
                 if ((mines[x+1][y+1] == 0) || (mines[x+1][y+1] == 1)){
                     perm[x][y] = perimcheck(x,y);
                 }
-                b[x][y] = new JButton("?");
+                b[x][y] = new JButton(" ");
                 b[x][y].addActionListener(this);
                 b[x][y].addMouseListener(this);
-                add(b[x][y]);
+                tablero.add(b[x][y]);
                 b[x][y].setEnabled(true);
             }//end inner for
         }//end for
         pack();
+        tablero.setVisible(true);
         setVisible(true);
         for (int y = 0;y<m+2;y++){
             for (int x = 0;x<n+2;x++){
@@ -97,7 +127,11 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener{
             }//end inner for
         }//end for
         if(!found) {
-            System.out.println("didn't find the button, there was an error "); System.exit(-1);
+            if (current == reiniciar) {
+                System.out.println("REINICIO"); new Buscaminas(); this.dispose();
+            } else {
+                System.out.println("didn't find the button, there was an error "); System.exit(-1);
+            }
         }
         Component temporaryLostComponent = null;
         if (b[row][column].getBackground() == Color.orange){
@@ -120,6 +154,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener{
         }
     }
  
+    
     public void checkifend(){
         int check= 0;
         for (int y = 0; y<m;y++){
@@ -203,14 +238,17 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener{
             }
             if ((guesses[row+1][column+1] == 0) && (b[row][column].isEnabled())){
                 b[row][column].setText("x");
+                nomines--;
                 guesses[row+1][column+1] = 1;
                 b[row][column].setBackground(Color.orange);
             } else if (guesses[row+1][column+1] == 1){
-                b[row][column].setText("?");
+                b[row][column].setText(" ");
+                nomines++;
                 guesses[row+1][column+1] = 0;
                 b[row][column].setBackground(null);
             }
         }
+        minasRestantes.setText(String.valueOf(nomines));
     }
  
     @Override
