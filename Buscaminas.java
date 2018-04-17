@@ -8,15 +8,20 @@ import javax.swing.*;
 public class Buscaminas extends JFrame implements ActionListener, MouseListener {
 
     Timer t;
+    JMenuBar menuBar;
+    JMenu menu, submenu;
+    JMenuItem tiempos, guardar, cargar;
+    JRadioButtonMenuItem principiante, intermedio, experto, personalizado;
+    ButtonGroup group;
     JButton b[][];
     JButton reiniciar;
     JPanel tablero;
     JPanel botonera;
     JTextField minasRestantes, tiempo;
-    int nomines = 80;
+    int nomines = 40;
     int restantes;
-    int n = 30;
-    int m = 30;
+    int n = 16;
+    int m = 16;
     int row;
     int column;
     int guesses[][];
@@ -24,7 +29,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     int[][] mines;
     String tmp;
     boolean found = false;
-    boolean allmines;
+    boolean allmines, personalizadoBool;
     int deltax[] = {-1, 0, 1, -1, 1, -1, 0, 1};
     int deltay[] = {-1, -1, -1, 0, 0, 1, 1, 1};
     double starttime, endtime, currenttime;
@@ -38,6 +43,42 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         guesses = new int[n + 2][m + 2];
         mines = new int[n + 2][m + 2];
         b = new JButton[n][m];
+
+        menuBar = new JMenuBar();
+        menu = new JMenu("Opciones");
+        menuBar.add(menu);
+        guardar = new JMenuItem("Guardar partida");
+        menu.add(guardar);
+        cargar = new JMenuItem("Cargar partida");
+        menu.add(cargar);
+        tiempos = new JMenuItem("Mejores tiempos");
+        menu.add(tiempos);
+        menu.addSeparator();
+        submenu = new JMenu("Dificultad");
+        group = new ButtonGroup();
+        principiante = new JRadioButtonMenuItem("Principiante (10x10, 10 minas)");
+        group.add(principiante);
+        submenu.add(principiante);
+        intermedio = new JRadioButtonMenuItem("Intermedio (16x16, 40 minas)");
+        intermedio.setSelected(true);
+        group.add(intermedio);
+        submenu.add(intermedio);
+        experto = new JRadioButtonMenuItem("Experto (32x16, 99 minas)");
+        group.add(experto);
+        submenu.add(experto);
+        personalizado = new JRadioButtonMenuItem("Personalizado");
+        group.add(personalizado);
+        submenu.add(personalizado);
+        menu.add(submenu);
+        this.setJMenuBar(menuBar);
+        cargar.addActionListener(menus);
+        guardar.addActionListener(menus);
+        tiempos.addActionListener(menus);
+        principiante.addActionListener(dif);
+        intermedio.addActionListener(dif);
+        experto.addActionListener(dif);
+        personalizado.addActionListener(dif);
+
         reiniciar = new JButton("Reiniciar");
         reiniciar.addActionListener(this);
         reiniciar.addMouseListener(this);
@@ -126,7 +167,52 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         @Override
         public void actionPerformed(ActionEvent ae) {
             currenttime = System.nanoTime();
-            tiempo.setText(String.valueOf((int)((currenttime - starttime) / 1000000000)));
+            tiempo.setText(String.valueOf((int) ((currenttime - starttime) / 1000000000)));
+        }
+    };
+
+    private ActionListener menus = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            JMenuItem current = (JMenuItem) ae.getSource();
+            if (current == guardar) {
+                // Cod Guardar
+            } else if (current == cargar) {
+                //Cod cargar
+            } else if (current == tiempos) {
+                //Cod tiempos
+            } else {
+                System.out.println("Error en boton. Menu principal");
+                System.exit(-1);
+            }
+        }
+    };
+
+    private ActionListener dif = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            JRadioButtonMenuItem current = (JRadioButtonMenuItem) ae.getSource();
+            if (current == principiante) {
+                n = 10;
+                m = 10;
+                nomines = 10;
+                reinicio();
+            } else if (current == intermedio) {
+                n = 16;
+                m = 16;
+                nomines = 40;
+                reinicio();
+            } else if (current == experto) {
+                n = 16;
+                m = 32;
+                nomines = 99;
+                reinicio();
+            } else if (current == personalizado) {
+                //Cod personalizado
+            } else {
+                System.out.println("Error en boton. Menu principal");
+                System.exit(-1);
+            }
         }
     };
 
@@ -176,8 +262,6 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     public void reinicio() {
         allmines = false;
         restantes = nomines;
-        n = 30;
-        m = 30;
         minasRestantes.setText(String.valueOf(restantes));
         b = new JButton[n][m];
         perm = new int[n][m];
