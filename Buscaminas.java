@@ -2,7 +2,9 @@ package buscaminas;
 
 import java.awt.*;
 import java.awt.event.*;
-
+import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 public class Buscaminas extends JFrame implements ActionListener, MouseListener {
@@ -27,6 +29,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     int guesses[][];
     int perm[][];
     int[][] mines;
+    boolean enabledBool[][];
     String tmp;
     boolean found = false;
     boolean allmines, personalizadoBool;
@@ -43,6 +46,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         guesses = new int[n + 2][m + 2];
         mines = new int[n + 2][m + 2];
         b = new JButton[n][m];
+        this.setLayout(new BorderLayout());
 
         menuBar = new JMenuBar();
         menu = new JMenu("Opciones");
@@ -83,15 +87,11 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         reiniciar.addActionListener(this);
         reiniciar.addMouseListener(this);
         reiniciar.setEnabled(true);
-        tablero = new JPanel();
-        tablero.setVisible(true);
-        tablero.setLayout(new GridLayout(n, m));
         minasRestantes = new JTextField();
         minasRestantes.setEnabled(false);
         minasRestantes.setText(String.valueOf(restantes));
         tiempo = new JTextField();
         tiempo.setEnabled(false);
-
         botonera = new JPanel();
         botonera.setVisible(true);
         botonera.setLayout(new GridLayout(1, 5));
@@ -100,7 +100,11 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         botonera.add(minasRestantes);
         botonera.add(new JLabel("Tiempo: "));
         botonera.add(tiempo);
-        this.setLayout(new BorderLayout());
+
+        tablero = new JPanel();
+        tablero.setVisible(true);
+        tablero.setLayout(new GridLayout(n, m));
+
         add(botonera, BorderLayout.PAGE_START);
         add(tablero, BorderLayout.CENTER);
 
@@ -176,9 +180,59 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         public void actionPerformed(ActionEvent ae) {
             JMenuItem current = (JMenuItem) ae.getSource();
             if (current == guardar) {
-                // Cod Guardar
+                try {
+                    currenttime = System.nanoTime();
+                    enabledBool = new boolean[n][m];
+                    for (int y = 0; y < m; y++) {
+                        for (int x = 0; x < n; x++) {
+                            enabledBool[x][y] = b[x][y].isEnabled();
+                        }//end inner for
+                    }//end for 
+                    File f = new File("partida.obj");
+                    FileOutputStream fos = new FileOutputStream(f);
+                    ObjectOutputStream oos = new ObjectOutputStream(fos);
+                    oos.writeObject(nomines);
+                    oos.writeObject(restantes);
+                    oos.writeObject(n);
+                    oos.writeObject(m);
+                    oos.writeObject(guesses);
+                    oos.writeObject(perm);
+                    oos.writeObject(mines);
+                    oos.writeObject(enabledBool);
+                    oos.writeObject(personalizadoBool);
+                    oos.writeObject((double) (currenttime - starttime));
+                    oos.close();
+                    fos.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(Buscaminas.class.getName()).log(Level.SEVERE, null, ex);
+                }
             } else if (current == cargar) {
-                //Cod cargar
+                currenttime = System.nanoTime();
+                tablero.setVisible(false);
+                remove(tablero); //COMPROBAR QUE PASA SI LO QUITO
+                try {
+                    File f = new File("partida.obj");
+                    FileInputStream fis = new FileInputStream(f);
+                    ObjectInputStream ois = new ObjectInputStream(fis);
+                    nomines = (int) ois.readObject();
+                    restantes = (int) ois.readObject();
+                    n = (int) ois.readObject();
+                    m = (int) ois.readObject();
+                    guesses = (int[][]) ois.readObject();
+                    perm = (int[][]) ois.readObject();
+                    mines = (int[][]) ois.readObject();
+                    enabledBool = (boolean[][]) ois.readObject();
+                    personalizadoBool = (boolean) ois.readObject();
+                    starttime = currenttime - (double) ois.readObject();
+                    ois.close();
+                    fis.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(Buscaminas.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(Buscaminas.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                cargarBotones();
+                t.start();
             } else if (current == tiempos) {
                 //Cod tiempos
             } else {
@@ -215,6 +269,41 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
             }
         }
     };
+
+    public void cargarBotones() {
+        minasRestantes.setText(String.valueOf(restantes));
+        tablero = new JPanel();
+        tablero.setVisible(true);
+        tablero.setLayout(new GridLayout(n, m));
+        this.add(tablero, BorderLayout.CENTER);
+        for (int y = 0; y < m; y++) {
+            for (int x = 0; x < n; x++) {
+                b[x][y] = new JButton(" ");
+                b[x][y].addActionListener(this);
+                b[x][y].addMouseListener(this);
+                if (!enabledBool[x][y]) {
+                    tmp = Integer.toString(perm[x][y]);
+                    if (perm[x][y] == 0) {
+                        tmp = " ";
+                    }
+                    b[x][y].setText(tmp);
+                    b[x][y].setEnabled(false);
+                } else if (guesses[x+1][y+1] == 1) {
+                    b[x][y].setText("x");
+                    b[x][y].setEnabled(true);
+                    b[x][y].setBackground(Color.orange);
+                } else {
+                    b[x][y].setText(" ");
+                    b[x][y].setEnabled(true);
+                    b[x][y].setBackground(null);
+                }
+                tablero.add(b[x][y]);
+            }//end inner for
+        }//end for 
+        pack();
+        tablero.setVisible(true);
+        setVisible(true);
+    }
 
     public void actionPerformed(ActionEvent e) {
         found = false;
