@@ -3,8 +3,11 @@ package buscaminas;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.util.Pair;
 import javax.swing.*;
 
 public class Buscaminas extends JFrame implements ActionListener, MouseListener {
@@ -20,6 +23,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     JPanel tablero;
     JPanel botonera;
     JTextField minasRestantes, tiempo;
+    LinkedList<Dupla> mejoresPrincipiante, mejoresIntermedio, mejoresExperto;
     int nomines = 40;
     int restantes;
     int n = 16;
@@ -42,6 +46,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         t = new Timer(1000, reloj);
         perm = new int[n][m];
         allmines = false;
+        personalizadoBool = false;
         restantes = nomines;
         guesses = new int[n + 2][m + 2];
         mines = new int[n + 2][m + 2];
@@ -208,8 +213,6 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                 }
             } else if (current == cargar) {
                 currenttime = System.nanoTime();
-                tablero.setVisible(false);
-                remove(tablero); //COMPROBAR QUE PASA SI LO QUITO
                 try {
                     File f = new File("partida.obj");
                     FileInputStream fis = new FileInputStream(f);
@@ -234,7 +237,25 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                 cargarBotones();
                 t.start();
             } else if (current == tiempos) {
-                //Cod tiempos
+                cargarMejores();
+                Dupla d;
+                String texto = "NIVEL PRINCIPIANTE\n";
+                while (! mejoresPrincipiante.isEmpty()) {
+                    d = mejoresPrincipiante.pop();
+                    texto = texto + " " + d.getTiempo() + " segundos : " + d.getNombre() + "\n";
+                    
+                }
+                texto = texto + "\n NIVEL INTERMEDIO\n";
+                while (!mejoresIntermedio.isEmpty()) {
+                    d = mejoresIntermedio.pop();
+                    texto = texto + " " + d.getTiempo() + " segundos : " + d.getNombre() + "\n";
+                }
+                texto = texto + "\n NIVEL EXPERTO\n";
+                while (! mejoresExperto.isEmpty()) {
+                    d = mejoresExperto.pop();
+                    texto = texto + " " + d.getTiempo() + " segundos : " + d.getNombre() + "\n";
+                }
+                JOptionPane.showMessageDialog(null, texto);
             } else {
                 System.out.println("Error en boton. Menu principal");
                 System.exit(-1);
@@ -247,22 +268,29 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         public void actionPerformed(ActionEvent ae) {
             JRadioButtonMenuItem current = (JRadioButtonMenuItem) ae.getSource();
             if (current == principiante) {
+                personalizadoBool = false;
                 n = 10;
                 m = 10;
                 nomines = 10;
                 reinicio();
             } else if (current == intermedio) {
+                personalizadoBool = false;
                 n = 16;
                 m = 16;
                 nomines = 40;
                 reinicio();
             } else if (current == experto) {
+                personalizadoBool = false;
                 n = 16;
                 m = 32;
                 nomines = 99;
                 reinicio();
             } else if (current == personalizado) {
-                //Cod personalizado
+                personalizadoBool = true;
+                n = Integer.valueOf(JOptionPane.showInputDialog("Type number of rows: "));
+                m = Integer.valueOf(JOptionPane.showInputDialog("Type number of columns: "));
+                nomines = Integer.valueOf(JOptionPane.showInputDialog("Type number of mines: "));
+                reinicio();
             } else {
                 System.out.println("Error en boton. Menu principal");
                 System.exit(-1);
@@ -271,11 +299,14 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     };
 
     public void cargarBotones() {
+        tablero.setVisible(false);
+        remove(tablero); //COMPROBAR QUE PASA SI LO QUITO
         minasRestantes.setText(String.valueOf(restantes));
         tablero = new JPanel();
         tablero.setVisible(true);
         tablero.setLayout(new GridLayout(n, m));
         this.add(tablero, BorderLayout.CENTER);
+        b = new JButton[n][m];
         for (int y = 0; y < m; y++) {
             for (int x = 0; x < n; x++) {
                 b[x][y] = new JButton(" ");
@@ -288,7 +319,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                     }
                     b[x][y].setText(tmp);
                     b[x][y].setEnabled(false);
-                } else if (guesses[x+1][y+1] == 1) {
+                } else if (guesses[x + 1][y + 1] == 1) {
                     b[x][y].setText("x");
                     b[x][y].setEnabled(true);
                     b[x][y].setBackground(Color.orange);
@@ -303,6 +334,26 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         pack();
         tablero.setVisible(true);
         setVisible(true);
+    }
+
+    public void cargarMejores() {
+        mejoresPrincipiante = new LinkedList();
+        mejoresIntermedio = new LinkedList();
+        mejoresExperto = new LinkedList();
+        try {
+            File f2 = new File("mejores.obj");
+            FileInputStream fis2 = new FileInputStream(f2);
+            ObjectInputStream ois2 = new ObjectInputStream(fis2);
+            mejoresPrincipiante = (LinkedList) ois2.readObject();
+            mejoresIntermedio = (LinkedList) ois2.readObject();
+            mejoresExperto = (LinkedList) ois2.readObject();
+            ois2.close();
+            fis2.close();
+        } catch (IOException ex) {
+            Logger.getLogger(Buscaminas.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Buscaminas.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -430,9 +481,52 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         }
         if (check == nomines) {
             endtime = System.nanoTime();
-            Component temporaryLostComponent = null;
             t.stop();
-            JOptionPane.showMessageDialog(temporaryLostComponent, "Congratulations you won!!! It took you " + (int) ((endtime - starttime) / 1000000000) + " seconds!");
+            int time = (int) ((currenttime - starttime) / 1000000000);
+            if (personalizadoBool) {
+                JOptionPane.showMessageDialog(null, "Congratulations you won!!! It took you " + time + " seconds!");
+            } else {
+                String input = null;
+                input = JOptionPane.showInputDialog("Congratulations you won!!! It took you " + time + " seconds! Type your name to record your achievement: ");
+                if (input != null) {
+                    cargarMejores();
+                    switch (nomines) {
+                        case 10:
+                            mejoresPrincipiante.add(new Dupla(time, input));
+                            Collections.sort(mejoresPrincipiante);
+                            if (mejoresPrincipiante.size() > 10) {
+                                mejoresPrincipiante.removeLast();
+                            }
+                            break;
+                        case 40:
+                            mejoresIntermedio.add(new Dupla(time, input));
+                            Collections.sort(mejoresIntermedio);
+                            if (mejoresIntermedio.size() > 10) {
+                                mejoresIntermedio.removeLast();
+                            }
+                            break;
+                        case 99:
+                            mejoresExperto.add(new Dupla(time, input));
+                            Collections.sort(mejoresExperto);
+                            if (mejoresExperto.size() > 10) {
+                                mejoresExperto.removeLast();
+                            }
+                            break;
+                    }
+                    try {
+                        File f2 = new File("mejores.obj");
+                        FileOutputStream fos2 = new FileOutputStream(f2);
+                        ObjectOutputStream oos2 = new ObjectOutputStream(fos2);
+                        oos2.writeObject(mejoresPrincipiante);
+                        oos2.writeObject(mejoresIntermedio);
+                        oos2.writeObject(mejoresExperto);
+                        oos2.close();
+                        fos2.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(Buscaminas.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
         }
     }
 
