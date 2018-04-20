@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.util.Pair;
 import javax.swing.*;
 
 public class Buscaminas extends JFrame implements ActionListener, MouseListener {
@@ -183,6 +182,13 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     private ActionListener menus = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent ae) {
+            File f;
+            FileInputStream fis;
+            FileOutputStream fos;
+            ObjectInputStream ois;
+            ObjectOutputStream oos;
+            Dupla d;
+            String texto;
             JMenuItem current = (JMenuItem) ae.getSource();
             if (current == guardar) {
                 try {
@@ -193,9 +199,9 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                             enabledBool[x][y] = b[x][y].isEnabled();
                         }//end inner for
                     }//end for 
-                    File f = new File("partida.obj");
-                    FileOutputStream fos = new FileOutputStream(f);
-                    ObjectOutputStream oos = new ObjectOutputStream(fos);
+                    f = new File("partida.obj");
+                    fos = new FileOutputStream(f);
+                    oos = new ObjectOutputStream(fos);
                     oos.writeObject(nomines);
                     oos.writeObject(restantes);
                     oos.writeObject(n);
@@ -214,9 +220,9 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
             } else if (current == cargar) {
                 currenttime = System.nanoTime();
                 try {
-                    File f = new File("partida.obj");
-                    FileInputStream fis = new FileInputStream(f);
-                    ObjectInputStream ois = new ObjectInputStream(fis);
+                    f = new File("partida.obj");
+                    fis = new FileInputStream(f);
+                    ois = new ObjectInputStream(fis);
                     nomines = (int) ois.readObject();
                     restantes = (int) ois.readObject();
                     n = (int) ois.readObject();
@@ -238,22 +244,21 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                 t.start();
             } else if (current == tiempos) {
                 cargarMejores();
-                Dupla d;
-                String texto = "NIVEL PRINCIPIANTE\n";
-                while (! mejoresPrincipiante.isEmpty()) {
+                texto = "NIVEL PRINCIPIANTE\n";
+                while (!mejoresPrincipiante.isEmpty()) {
                     d = mejoresPrincipiante.pop();
-                    texto = texto + " " + d.getTiempo() + " segundos : " + d.getNombre() + "\n";
-                    
+                    texto = texto + " " + d.getTiempo() + " segundos - " + d.getNombre() + "\n";
+
                 }
                 texto = texto + "\n NIVEL INTERMEDIO\n";
                 while (!mejoresIntermedio.isEmpty()) {
                     d = mejoresIntermedio.pop();
-                    texto = texto + " " + d.getTiempo() + " segundos : " + d.getNombre() + "\n";
+                    texto = texto + " " + d.getTiempo() + " segundos - " + d.getNombre() + "\n";
                 }
                 texto = texto + "\n NIVEL EXPERTO\n";
-                while (! mejoresExperto.isEmpty()) {
+                while (!mejoresExperto.isEmpty()) {
                     d = mejoresExperto.pop();
-                    texto = texto + " " + d.getTiempo() + " segundos : " + d.getNombre() + "\n";
+                    texto = texto + " " + d.getTiempo() + " segundos - " + d.getNombre() + "\n";
                 }
                 JOptionPane.showMessageDialog(null, texto);
             } else {
@@ -337,13 +342,16 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     }
 
     public void cargarMejores() {
+        File f2;
+        FileInputStream fis2;
+        ObjectInputStream ois2;
         mejoresPrincipiante = new LinkedList();
         mejoresIntermedio = new LinkedList();
         mejoresExperto = new LinkedList();
         try {
-            File f2 = new File("mejores.obj");
-            FileInputStream fis2 = new FileInputStream(f2);
-            ObjectInputStream ois2 = new ObjectInputStream(fis2);
+            f2 = new File("mejores.obj");
+            fis2 = new FileInputStream(f2);
+            ois2 = new ObjectInputStream(fis2);
             mejoresPrincipiante = (LinkedList) ois2.readObject();
             mejoresIntermedio = (LinkedList) ois2.readObject();
             mejoresExperto = (LinkedList) ois2.readObject();
@@ -357,8 +365,8 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     }
 
     public void actionPerformed(ActionEvent e) {
-        found = false;
         JButton current = (JButton) e.getSource();
+        found = false;
         if (current == reiniciar) {
             System.out.println("REINICIO");
             reinicio();
