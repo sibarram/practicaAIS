@@ -107,7 +107,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
 
         tablero = new JPanel();
         tablero.setVisible(true);
-        tablero.setLayout(new GridLayout(n, m));
+        tablero.setLayout(new GridLayout(m, n));
 
         add(botonera, BorderLayout.PAGE_START);
         add(tablero, BorderLayout.CENTER);
@@ -187,8 +187,6 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
             FileOutputStream fos;
             ObjectInputStream ois;
             ObjectOutputStream oos;
-            Dupla d;
-            String texto;
             JMenuItem current = (JMenuItem) ae.getSource();
             if (current == guardar) {
                 try {
@@ -244,23 +242,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                 t.start();
             } else if (current == tiempos) {
                 cargarMejores();
-                texto = "NIVEL PRINCIPIANTE\n";
-                while (!mejoresPrincipiante.isEmpty()) {
-                    d = mejoresPrincipiante.pop();
-                    texto = texto + " " + d.getTiempo() + " segundos - " + d.getNombre() + "\n";
-
-                }
-                texto = texto + "\n NIVEL INTERMEDIO\n";
-                while (!mejoresIntermedio.isEmpty()) {
-                    d = mejoresIntermedio.pop();
-                    texto = texto + " " + d.getTiempo() + " segundos - " + d.getNombre() + "\n";
-                }
-                texto = texto + "\n NIVEL EXPERTO\n";
-                while (!mejoresExperto.isEmpty()) {
-                    d = mejoresExperto.pop();
-                    texto = texto + " " + d.getTiempo() + " segundos - " + d.getNombre() + "\n";
-                }
-                JOptionPane.showMessageDialog(null, texto);
+                mejoresTiempos();
             } else {
                 System.out.println("Error en boton. Menu principal");
                 System.exit(-1);
@@ -309,7 +291,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         minasRestantes.setText(String.valueOf(restantes));
         tablero = new JPanel();
         tablero.setVisible(true);
-        tablero.setLayout(new GridLayout(n, m));
+        tablero.setLayout(new GridLayout(m, n));
         this.add(tablero, BorderLayout.CENTER);
         b = new JButton[n][m];
         for (int y = 0; y < m; y++) {
@@ -339,6 +321,28 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         pack();
         tablero.setVisible(true);
         setVisible(true);
+    }
+
+    public void mejoresTiempos() {
+        Dupla d;
+        String texto;
+        texto = "NIVEL PRINCIPIANTE\n";
+        while (!mejoresPrincipiante.isEmpty()) {
+            d = mejoresPrincipiante.pop();
+            texto = texto + " " + d.getTiempo() + " segundos - " + d.getNombre() + "\n";
+
+        }
+        texto = texto + "\n NIVEL INTERMEDIO\n";
+        while (!mejoresIntermedio.isEmpty()) {
+            d = mejoresIntermedio.pop();
+            texto = texto + " " + d.getTiempo() + " segundos - " + d.getNombre() + "\n";
+        }
+        texto = texto + "\n NIVEL EXPERTO\n";
+        while (!mejoresExperto.isEmpty()) {
+            d = mejoresExperto.pop();
+            texto = texto + " " + d.getTiempo() + " segundos - " + d.getNombre() + "\n";
+        }
+        JOptionPane.showMessageDialog(null, texto);
     }
 
     public void cargarMejores() {
@@ -419,7 +423,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         this.remove(tablero);
         tablero = new JPanel();
         tablero.setVisible(true);
-        tablero.setLayout(new GridLayout(n, m));
+        tablero.setLayout(new GridLayout(m, n));
         add(tablero, BorderLayout.CENTER);
 
         for (int y = 0; y < m + 2; y++) {
@@ -533,6 +537,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                     } catch (IOException ex) {
                         Logger.getLogger(Buscaminas.class.getName()).log(Level.SEVERE, null, ex);
                     }
+                    mejoresTiempos();
                 }
             }
         }
