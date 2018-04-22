@@ -7,10 +7,6 @@ package buscaminas;
 
 import java.io.Serializable;
 
-/**
- *
- * @author Marcos
- */
 public class Dupla implements Comparable, Serializable {
 
     int tiempo;

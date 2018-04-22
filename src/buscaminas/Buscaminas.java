@@ -41,6 +41,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     double starttime, endtime, currenttime;
 
     public Buscaminas() {
+        //Inicializacion de variables
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         t = new Timer(1000, reloj);
         perm = new int[n][m];
@@ -50,8 +51,9 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         guesses = new int[n + 2][m + 2];
         mines = new int[n + 2][m + 2];
         b = new JButton[n][m];
-        this.setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout()); //Layout del JFrame (compuesto por dos JPanel: botonera y tablero)
 
+        //Creacion de la barra de menu con sus item y submenus
         menuBar = new JMenuBar();
         menu = new JMenu("Opciones");
         menuBar.add(menu);
@@ -63,7 +65,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         menu.add(tiempos);
         menu.addSeparator();
         submenu = new JMenu("Dificultad");
-        group = new ButtonGroup();
+        group = new ButtonGroup(); //Para que solo pueda estar seleccionado un JRadioButton a la vez
         principiante = new JRadioButtonMenuItem("Principiante (10x10, 10 minas)");
         group.add(principiante);
         submenu.add(principiante);
@@ -79,6 +81,8 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         submenu.add(personalizado);
         menu.add(submenu);
         this.setJMenuBar(menuBar);
+        
+        //Adicion de ActionListener a cada elemento
         cargar.addActionListener(menus);
         guardar.addActionListener(menus);
         tiempos.addActionListener(menus);
@@ -86,15 +90,16 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         intermedio.addActionListener(dif);
         experto.addActionListener(dif);
         personalizado.addActionListener(dif);
-
-        reiniciar = new JButton("Reiniciar");
+        
+        //Creacion de la botonera
+        reiniciar = new JButton("Reiniciar"); //Boton de reiniciar
         reiniciar.addActionListener(this);
         reiniciar.addMouseListener(this);
         reiniciar.setEnabled(true);
-        minasRestantes = new JTextField();
+        minasRestantes = new JTextField(); //Campo de texto minas restantes
         minasRestantes.setEnabled(false);
         minasRestantes.setText(String.valueOf(restantes));
-        tiempo = new JTextField();
+        tiempo = new JTextField(); //Campo de texto de minas restantes
         tiempo.setEnabled(false);
         botonera = new JPanel();
         botonera.setVisible(true);
@@ -105,13 +110,16 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         botonera.add(new JLabel("Tiempo: "));
         botonera.add(tiempo);
 
-        tablero = new JPanel();
+        //Creacion tablero de minas m x n, con GridLayout
+        tablero = new JPanel(); 
         tablero.setVisible(true);
         tablero.setLayout(new GridLayout(m, n));
 
+        //Integracion de botonera y tablero en el JFrame
         add(botonera, BorderLayout.PAGE_START);
         add(tablero, BorderLayout.CENTER);
 
+        //Inicializacion de mines y guesses
         for (int y = 0; y < m + 2; y++) {
             mines[0][y] = 3;
             mines[n + 1][y] = 3;
@@ -146,6 +154,8 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                 allmines = true;
             }
         } while (allmines == false);
+        
+        //Inicializacion de perm
         for (int y = 0; y < m; y++) {
             for (int x = 0; x < n; x++) {
                 if ((mines[x + 1][y + 1] == 0) || (mines[x + 1][y + 1] == 1)) {
@@ -161,17 +171,20 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         pack();
         tablero.setVisible(true);
         setVisible(true);
+        //Impresion de mines en terminal
         for (int y = 0; y < m + 2; y++) {
             for (int x = 0; x < n + 2; x++) {
                 System.out.print(mines[x][y]);
             }
             System.out.println("");
         }
+        //Inicio cronometro
         starttime = System.nanoTime();
         t.start();
-    }//end constructor Mine()
+    }//end constructor Buscaminas
 
     private ActionListener reloj = new ActionListener() {
+        //Cada segundo actualiza el tiempo transcurrido de partida
         @Override
         public void actionPerformed(ActionEvent ae) {
             currenttime = System.nanoTime();
@@ -180,6 +193,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     };
 
     private ActionListener menus = new ActionListener() {
+        //ActionListener para la barra de menu
         @Override
         public void actionPerformed(ActionEvent ae) {
             File f;
@@ -189,6 +203,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
             ObjectOutputStream oos;
             JMenuItem current = (JMenuItem) ae.getSource();
             if (current == guardar) {
+                // Guardamos los objetos importantes en el fichero "partida.obj"
                 try {
                     currenttime = System.nanoTime();
                     enabledBool = new boolean[n][m];
@@ -216,6 +231,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                     Logger.getLogger(Buscaminas.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else if (current == cargar) {
+                //Leemos los objetos importantes del fichero "partida.obj"
                 currenttime = System.nanoTime();
                 try {
                     f = new File("partida.obj");
@@ -238,11 +254,11 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                 } catch (ClassNotFoundException ex) {
                     Logger.getLogger(Buscaminas.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                cargarBotones();
+                cargarBotones(); //Invoca el metodo que carga el nuevo tablero
                 t.start();
             } else if (current == tiempos) {
-                cargarMejores();
-                mejoresTiempos();
+                cargarMejores(); // Invoca el metodo que carga los mejores tiempos del fichero "mejores.obj"
+                mejoresTiempos(); // Muestra una ventana emergente con los mejores tiempos
             } else {
                 System.out.println("Error en boton. Menu principal");
                 System.exit(-1);
@@ -251,9 +267,11 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     };
 
     private ActionListener dif = new ActionListener() {
+        //ActionListener para el menu de dificultades
         @Override
         public void actionPerformed(ActionEvent ae) {
             JRadioButtonMenuItem current = (JRadioButtonMenuItem) ae.getSource();
+            //Cada opcion del if-elseif setea los valores de n, m y nomines
             if (current == principiante) {
                 personalizadoBool = false;
                 n = 10;
@@ -273,6 +291,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                 nomines = 99;
                 reinicio();
             } else if (current == personalizado) {
+                //En este caso, preguntamos al usuario mediante una ventana emergente por los valores deseados
                 personalizadoBool = true;
                 n = Integer.valueOf(JOptionPane.showInputDialog("Type number of rows: "));
                 m = Integer.valueOf(JOptionPane.showInputDialog("Type number of columns: "));
@@ -286,9 +305,12 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     };
 
     public void cargarBotones() {
+        //Nos deshacemos del tablero anterior
         tablero.setVisible(false);
-        remove(tablero); //COMPROBAR QUE PASA SI LO QUITO
+        remove(tablero);
+        //Cambiamos minas restantes
         minasRestantes.setText(String.valueOf(restantes));
+        //Creamos el nuevo tablero
         tablero = new JPanel();
         tablero.setVisible(true);
         tablero.setLayout(new GridLayout(m, n));
@@ -299,7 +321,10 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                 b[x][y] = new JButton(" ");
                 b[x][y].addActionListener(this);
                 b[x][y].addMouseListener(this);
-                if (!enabledBool[x][y]) {
+                if (!enabledBool[x][y]) { 
+                    /*Si el boton estaba "disabled" en la partida original, es que ya esta pulsado
+                    Por tanto, puede tener como valor un entero positivo o ' ' 
+                    */
                     tmp = Integer.toString(perm[x][y]);
                     if (perm[x][y] == 0) {
                         tmp = " ";
@@ -307,10 +332,12 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                     b[x][y].setText(tmp);
                     b[x][y].setEnabled(false);
                 } else if (guesses[x + 1][y + 1] == 1) {
+                    // Si guesses vale 1 en esa posicion, es que ya lo habiamos marcado como mina
                     b[x][y].setText("x");
                     b[x][y].setEnabled(true);
                     b[x][y].setBackground(Color.orange);
                 } else {
+                    // En cualquier otro caso, la casilla esta sin explorar
                     b[x][y].setText(" ");
                     b[x][y].setEnabled(true);
                     b[x][y].setBackground(null);
@@ -324,6 +351,9 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     }
 
     public void mejoresTiempos() {
+        /*Incluimos los mejores tiempos de cada categoria en el string texto, y lo mostramos en un MessageDialog
+        Estan implementados como LinkedList de duplas (nombre, tiempo).
+        */
         Dupla d;
         String texto;
         texto = "NIVEL PRINCIPIANTE\n";
@@ -346,6 +376,9 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     }
 
     public void cargarMejores() {
+        /*Cargamos los mejores tiempos de "mejores.obj". Estan implementados
+        como LinkedList de duplas (nombre, tiempo).
+        */
         File f2;
         FileInputStream fis2;
         ObjectInputStream ois2;
@@ -369,12 +402,13 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     }
 
     public void actionPerformed(ActionEvent e) {
+        //ActionListener del JFrame
         JButton current = (JButton) e.getSource();
         found = false;
-        if (current == reiniciar) {
+        if (current == reiniciar) { //Si pulsamos reinciar, se reinicia el tablero
             System.out.println("REINICIO");
             reinicio();
-        } else {
+        } else { //Si es otro boton, buscamos cual es con este for anidado
             for (int y = 0; y < m; y++) {
                 for (int x = 0; x < n; x++) {
                     JButton t = b[x][y];
@@ -390,21 +424,24 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                 System.exit(-1);
             }
             Component temporaryLostComponent = null;
-            if (b[row][column].getBackground() == Color.orange) {
+            if (b[row][column].getBackground() == Color.orange) { 
+                //Si esta marcado como mina (BackgroundColor orange), no hacemos nada
                 return;
-            } else if (mines[row + 1][column + 1] == 1) {
+            } else if (mines[row + 1][column + 1] == 1) { 
+                //Si habia una mina, mostramos mensaje y reiniciamos tablero
                 JOptionPane.showMessageDialog(temporaryLostComponent, "You set off a Mine!!!!.");
                 reinicio();
             } else {
+                //Si no habia mina, revelamos la celda 
                 tmp = Integer.toString(perm[row][column]);
                 if (perm[row][column] == 0) {
                     tmp = " ";
                 }
                 b[row][column].setText(tmp);
                 b[row][column].setEnabled(false);
-                checkifend();
+                checkifend(); // Comprueba si hemos ganado
                 if (perm[row][column] == 0) {
-                    scan(row, column);
+                    scan(row, column); //Si tiene 0 minas alrededor, revelamos sus colaterales
                     checkifend();
                 }
             }
@@ -412,6 +449,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     }
 
     public void reinicio() {
+        //Reseteamos las variables
         allmines = false;
         restantes = nomines;
         minasRestantes.setText(String.valueOf(restantes));
@@ -426,6 +464,8 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
         tablero.setLayout(new GridLayout(m, n));
         add(tablero, BorderLayout.CENTER);
 
+        //Construimos el tablero igual que en el constructor inicial
+        //Primero inicializamos mines y guesses
         for (int y = 0; y < m + 2; y++) {
             mines[0][y] = 3;
             mines[n + 1][y] = 3;
@@ -460,6 +500,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                 allmines = true;
             }
         } while (allmines == false);
+        //Inicializamos perm
         for (int y = 0; y < m; y++) {
             for (int x = 0; x < n; x++) {
                 if ((mines[x + 1][y + 1] == 0) || (mines[x + 1][y + 1] == 1)) {
@@ -483,6 +524,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     }
 
     public void checkifend() {
+        //Comprueba si hemos ganado la partida (si solo quedan sin explorar las casillas con mina)
         int check = 0;
         for (int y = 0; y < m; y++) {
             for (int x = 0; x < n; x++) {
@@ -492,32 +534,39 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
             }
         }
         if (check == nomines) {
+            //Paramos el cronometro 
             endtime = System.nanoTime();
             t.stop();
+            //Calculamos la duracion de la partida
             int time = (int) ((currenttime - starttime) / 1000000000);
+            //Si era dificultad personalizada, mostramos el tiempo invertido
             if (personalizadoBool) {
                 JOptionPane.showMessageDialog(null, "Congratulations you won!!! It took you " + time + " seconds!");
             } else {
+                //Si era otra dificultad, ademas guardamos el tiempo en la lista de mejores
                 String input = null;
                 input = JOptionPane.showInputDialog("Congratulations you won!!! It took you " + time + " seconds! Type your name to record your achievement: ");
                 if (input != null) {
-                    cargarMejores();
+                    cargarMejores(); //Cargamos los mejores tiempos de "mejores.obj"
                     switch (nomines) {
-                        case 10:
+                        /*En cada caso, añadimos el tiempo actual a la lista de mejores, la ordenamos
+                        y en caso de que tenga tamaño > 10, borramos el peor tiempo
+                        */
+                        case 10: //10 minas es nivel principiante
                             mejoresPrincipiante.add(new Dupla(time, input));
                             Collections.sort(mejoresPrincipiante);
                             if (mejoresPrincipiante.size() > 10) {
                                 mejoresPrincipiante.removeLast();
                             }
                             break;
-                        case 40:
+                        case 40: //40 minas es nivel intermedio
                             mejoresIntermedio.add(new Dupla(time, input));
                             Collections.sort(mejoresIntermedio);
                             if (mejoresIntermedio.size() > 10) {
                                 mejoresIntermedio.removeLast();
                             }
                             break;
-                        case 99:
+                        case 99: //99 minas es nivel experto
                             mejoresExperto.add(new Dupla(time, input));
                             Collections.sort(mejoresExperto);
                             if (mejoresExperto.size() > 10) {
@@ -526,6 +575,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                             break;
                     }
                     try {
+                        //Finalmente, guardamos las listas de mejores tiempos en "mejores.obj"
                         File f2 = new File("mejores.obj");
                         FileOutputStream fos2 = new FileOutputStream(f2);
                         ObjectOutputStream oos2 = new ObjectOutputStream(fos2);
@@ -544,16 +594,19 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     }
 
     public void scan(int x, int y) {
+        //Explora las casillas adyacentes a (x,y), que será una casilla sin minas alrededor
         for (int a = 0; a < 8; a++) {
             if (mines[x + 1 + deltax[a]][y + 1 + deltay[a]] == 3) {
-
+                //Si estamos en un borde, no hacemos nada
             } else if ((perm[x + deltax[a]][y + deltay[a]] == 0) && (mines[x + 1 + deltax[a]][y + 1 + deltay[a]] == 0) && (guesses[x + deltax[a] + 1][y + deltay[a] + 1] == 0)) {
+                //Si tampoco tiene minas alrededor, exploramos todas sus adyacentes a su vez
                 if (b[x + deltax[a]][y + deltay[a]].isEnabled()) {
                     b[x + deltax[a]][y + deltay[a]].setText(" ");
                     b[x + deltax[a]][y + deltay[a]].setEnabled(false);
                     scan(x + deltax[a], y + deltay[a]);
                 }
             } else if ((perm[x + deltax[a]][y + deltay[a]] != 0) && (mines[x + 1 + deltax[a]][y + 1 + deltay[a]] == 0) && (guesses[x + deltax[a] + 1][y + deltay[a] + 1] == 0)) {
+                //si no, nos limitamos a revelar el contenido de las adyacentes
                 tmp = new Integer(perm[x + deltax[a]][y + deltay[a]]).toString();
                 b[x + deltax[a]][y + deltay[a]].setText(Integer.toString(perm[x + deltax[a]][y + deltay[a]]));
                 b[x + deltax[a]][y + deltay[a]].setEnabled(false);
@@ -562,6 +615,7 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
     }
 
     public int perimcheck(int a, int y) {
+        //Contamos las minas alrededor de la casilla (a,y)
         int minecount = 0;
         for (int x = 0; x < 8; x++) {
             if (mines[a + deltax[x] + 1][y + deltay[x] + 1] == 1) {
@@ -595,9 +649,11 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
 
     @Override
     public void mousePressed(MouseEvent e) {
+        //Gestiona el evento de presionar el boton derecho del raton
         if (e.getButton() == MouseEvent.BUTTON3) {
             found = false;
             Object current = e.getSource();
+            //Averiguamos el boton sobre el que se ha pulsado
             for (int y = 0; y < m; y++) {
                 for (int x = 0; x < n; x++) {
                     JButton t = b[x][y];
@@ -612,12 +668,14 @@ public class Buscaminas extends JFrame implements ActionListener, MouseListener 
                 System.out.println("didn't find the button, there was an error ");
                 System.exit(-1);
             }
+            //Si estaba sin explorar, la marcamos como mina con una 'x', y actualizamos contador de minas restantes
             if ((guesses[row + 1][column + 1] == 0) && (b[row][column].isEnabled())) {
                 b[row][column].setText("x");
                 restantes--;
                 guesses[row + 1][column + 1] = 1;
                 b[row][column].setBackground(Color.orange);
             } else if (guesses[row + 1][column + 1] == 1) {
+                //Si estaba marcada como mina, hacemos lo contrario, la desmarcamos y actualizamos contador
                 b[row][column].setText(" ");
                 restantes++;
                 guesses[row + 1][column + 1] = 0;
